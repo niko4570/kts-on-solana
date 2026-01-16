@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 
 #[error_code]
 
-pub enum ktsError{
+pub enum KTSError{
     
     #[msg("This device is already registered")]
     DeviceAlreadyRegistered,

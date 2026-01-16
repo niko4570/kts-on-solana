@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 use super::super::constants::*;
-use super::super::errors::ktsError;
+use super::super::errors::KTSError;
 use super::super::state::DeviceAccount;
 
 pub fn register_device(
@@ -8,7 +8,7 @@ pub fn register_device(
     device_hash:[u8;32],
     device_name:String,
 )->Result<()>{
-    require!(device_name.len()<=64,ktsError::InvalidProcessNameLength);
+    require!(device_name.len()<=64,KTSError::InvalidProcessNameLength);
     let device_account=&mut ctx.accounts.device_account;
     device_account.owner=*ctx.accounts.user.key;
     device_account.device_hash=device_hash;

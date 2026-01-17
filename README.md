@@ -154,4 +154,64 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## QuickStart
 
-[QuickStart->](#quikstart)
+Follow these steps to get started quickly with kts-on-solana.
+
+### 1. Prerequisites
+
+Ensure you have the following installed:
+
+- Node.js (v16+)
+- Yarn
+- Rust and Cargo
+- Solana CLI
+- Anchor CLI
+
+### 2. Clone and Setup
+
+```bash
+git clone <repository-url>
+cd kts
+yarn install
+```
+
+### 3. Build the Solana Program
+
+```bash
+anchor build
+```
+
+### 4. Start Local Solana Validator
+
+In a new terminal:
+
+```bash
+solana-test-validator
+```
+
+### 5. Deploy the Program
+
+```bash
+anchor deploy
+```
+
+### 6. Run Tests
+
+```bash
+anchor test
+```
+
+### 7. Build and Run the Electron App
+
+```bash
+cd app
+npm install
+npm run build
+npm start
+```
+
+### 8. Basic Usage
+
+- **Register a Device**: In the app, enter device details to register.
+- **Upload Usage Data**: The app will automatically collect and upload daily usage data at midnight.
+
+For detailed API usage, see the [Usage](#usage) section.

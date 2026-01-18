@@ -18,4 +18,7 @@ pub enum KTSError{
 
     #[msg("Top processes array must contain exactly 5 entries")]
     InvalidTopProcessesArraySize,
+
+    #[msg("NFT has already been minted for this device")]
+    NftAlreadyMinted,
 }

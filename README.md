@@ -7,8 +7,8 @@ Solana dApp - Record computer usage statistics with privacy (only hash on-chain)
 ## Features
 
 - **Device Registration**: Register devices using a unique device hash as PDA seed, ensuring each device is registered only once.
-- **Daily Usage Upload**: Upload aggregated daily usage statistics (CPU, memory, top processes) along with a SHA256 hash of the data for privacy.
-- **Soulbound NFT Minting**: Automatically mint a soulbound NFT upon first device registration (planned feature).
+- **Daily Usage Upload**: Upload aggregated daily usage statistics (CPU, memory, top processes) along with a SHA256 hash of the data for privacy. Top processes are stored as fixed-size byte arrays (up to 5 processes, each up to 32 bytes).
+- **Soulbound NFT Minting**: Mark soulbound NFT as minted upon device registration (integration with Metaplex for actual minting).
 - **Privacy-Focused**: Only stores hashes and minimal plaintext statistics on-chain to protect user data.
 - **Electron App Integration**: Scheduled data collection in the Electron main process for hourly snapshots and daily uploads.
 
@@ -32,12 +32,13 @@ The project consists of:
 ### Key Accounts
 
 - **DeviceAccount**: Stores device owner, hash, registration timestamp, and NFT mint status.
-- **DailyUsageAccount**: Stores daily usage data including averages, top processes, and data hash.
+- **DailyUsageAccount**: Stores daily usage data including averages, top processes, top processes (stored as byte arrays), data hash, and creation timestamp.
 
 ### Instructions
 
-- `register_device`: Registers a new device.
-- `upload_daily_usage`: Uploads daily usage data for a registered device.
+- `register_device`: Registers a new device using a unique device hash as PDA seed.
+- `upload_daily_usage`: Uploads aggregated daily usage statistics (CPU, memory, top processes) along with a SHA256 hash of the data.
+- `mark_nft_minted`: Marks the NFT as minted for a registered device (for soulbound NFT integration).
 
 ## Installation
 
@@ -79,9 +80,50 @@ anchor build
 
 ### Deploy to Localnet
 
+1. Start a local Solana validator in a new terminal window:
+
+   ```bash
+   solana-test-validator
+   ```
+
+   Or alternatively, you can use Anchor to start the local network:
+
+   ```bash
+   anchor localnet
+   ```
+
+2. In another terminal window, deploy the program to the local network:
+
+   ```bash
+   anchor deploy --provider.cluster localnet
+   ```
+
+   If you're using `anchor localnet` in the first terminal, you can just run:
+
+   ```bash
+   anchor deploy
+   ```
+
+3. To run tests against the deployed program:
+
+   ```bash
+   anchor test
+   ```
+
+4. Configure Solana CLI to use the local network (if needed):
+   ```bash
+   solana config set --url localhost
+   ```
+
+### Deploy to Devnet (Optional)
+
+To deploy to Solana Devnet:
+
 ```bash
-anchor deploy
+anchor deploy --provider.cluster devnet
 ```
+
+Remember to have sufficient SOL tokens in your wallet for deployment fees.
 
 ### Build the Electron App
 
@@ -98,6 +140,8 @@ npm run build
 ```bash
 anchor test
 ```
+
+The tests include validation of device registration, usage upload, and NFT minting status.
 
 ### Running the App
 
@@ -133,6 +177,16 @@ await program.methods.registerDevice(deviceHash, deviceName).accounts({...}).rpc
 ```typescript
 // Example: Upload usage data
 await program.methods.uploadDailyUsage(deviceHash, timestamp, avgCpu, avgMem, topProcesses, dataHash).accounts({...}).rpc();
+```
+
+#### Mark NFT Minted
+
+```typescript
+// Example: Mark NFT as minted for a device
+await program.methods
+  .markNftMinted()
+  .accounts({ deviceAccount: deviceAccountPubkey, user: userPubkey })
+  .rpc();
 ```
 
 ## Contributing

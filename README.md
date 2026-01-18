@@ -34,11 +34,67 @@ The project consists of:
 - **DeviceAccount**: Stores device owner, hash, registration timestamp, and NFT mint status.
 - **DailyUsageAccount**: Stores daily usage data including averages, top processes, top processes (stored as byte arrays), data hash, and creation timestamp.
 
+### Program Details
+
+The KTS program implements three main instructions with corresponding account structures:
+
+#### State Structures
+
+- **DeviceAccount**:
+
+  - `owner`: Public key of the device owner
+  - `device_hash`: 32-byte SHA256 hash of device info
+  - `registered_at`: Timestamp when the device was registered
+  - `nft_minted`: Boolean indicating if the NFT has been minted
+
+- **DailyUsageAccount**:
+  - `device`: Public key of the associated device
+  - `timestamp`: Timestamp for the daily usage data
+  - `avg_cpu_usage`: Average CPU usage percentage (f32)
+  - `avg_memory_usage`: Average memory usage percentage (f32)
+  - `top_processes`: Array of 5 process names, each up to 32 bytes
+  - `data_hash`: 32-byte SHA256 hash of the usage data
+  - `created_at`: Timestamp when the record was created
+
+#### Constants
+
+- `MAX_PROCESS_NAME_LENGTH`: 32 bytes (maximum length for process names)
+- `PROCESS_ARRAY_SIZE`: 5 (fixed size for top processes array)
+- `DEVICE_ACCOUNT_SIZE`: 81 bytes (discriminator + 32 bytes owner + 32 bytes device hash + 8 bytes timestamp + 1 byte boolean)
+- `DAILY_USAGE_ACCOUNT_SIZE`: 256 bytes (discriminator + device pubkey + timestamps + floats + process array + data hash)
+
 ### Instructions
 
 - `register_device`: Registers a new device using a unique device hash as PDA seed.
+
+  - Parameters: `device_hash` ([u8;32]), `device_name` (String)
+  - Creates a new DeviceAccount with PDA seeds `[b"device", device_hash.as_ref()]`
+  - Validates device name length (≤64 characters)
+  - Initializes account with owner, hash, timestamp, and nft_minted = false
+
 - `upload_daily_usage`: Uploads aggregated daily usage statistics (CPU, memory, top processes) along with a SHA256 hash of the data.
+
+  - Parameters: `device_hash` ([u8;32]), `timestamp` (i64), `avg_cpu_usage` (f32), `avg_memory_usage` (f32), `top_processes` (Vec<String>), `data_hash` ([u8;32])
+  - Validates that the device belongs to the caller
+  - Ensures `top_processes` array contains exactly 5 entries
+  - Verifies each process name ≤ 32 characters
+  - Creates a new DailyUsageAccount with PDA seeds `[b"daily_usage", device_hash.as_ref(), &timestamp.to_le_bytes().as_ref()]`
+
 - `mark_nft_minted`: Marks the NFT as minted for a registered device (for soulbound NFT integration).
+  - Validates that the caller owns the device
+  - Checks that the NFT hasn't already been marked as minted
+  - Updates the device account's `nft_minted` field to true
+
+### Error Handling
+
+The program implements comprehensive error handling through the `KTSError` enum:
+
+- `DeviceAlreadyRegistered`: Thrown when attempting to register a device that's already registered
+- `InvalidDeviceOwner`: Thrown when the caller doesn't own the device they're trying to access
+- `DailyUsageAlreadyUploaded`: Thrown when daily usage for a specific day has already been uploaded
+- `InvalidProcessNameLength`: Thrown when a process name exceeds the maximum length
+- `InvalidTopProcessesArraySize`: Thrown when the top processes array doesn't contain exactly 5 entries
+- `NftAlreadyMinted`: Thrown when trying to mint an NFT for a device that already has one marked
 
 ## Installation
 
@@ -169,14 +225,36 @@ The tests include validation of device registration, usage upload, and NFT minti
 
 ```typescript
 // Example: Register a device with hash and name
-await program.methods.registerDevice(deviceHash, deviceName).accounts({...}).rpc();
+await program.methods
+  .registerDevice(deviceHash, deviceName)
+  .accounts({
+    user: userPublicKey,
+    deviceAccount: deviceAccountPDA,
+    systemProgram: SystemProgram.programId,
+  })
+  .rpc();
 ```
 
 #### Upload Daily Usage
 
 ```typescript
 // Example: Upload usage data
-await program.methods.uploadDailyUsage(deviceHash, timestamp, avgCpu, avgMem, topProcesses, dataHash).accounts({...}).rpc();
+await program.methods
+  .uploadDailyUsage(
+    deviceHash,
+    timestamp,
+    avgCpu,
+    avgMem,
+    topProcesses,
+    dataHash,
+  )
+  .accounts({
+    user: userPublicKey,
+    deviceAccount: deviceAccountPDA,
+    dailyUsageAccount: dailyUsageAccountPDA,
+    systemProgram: SystemProgram.programId,
+  })
+  .rpc();
 ```
 
 #### Mark NFT Minted
@@ -185,7 +263,10 @@ await program.methods.uploadDailyUsage(deviceHash, timestamp, avgCpu, avgMem, to
 // Example: Mark NFT as minted for a device
 await program.methods
   .markNftMinted()
-  .accounts({ deviceAccount: deviceAccountPubkey, user: userPubkey })
+  .accounts({
+    user: userPublicKey,
+    deviceAccount: deviceAccountPDA,
+  })
   .rpc();
 ```
 

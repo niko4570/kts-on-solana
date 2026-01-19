@@ -96,6 +96,28 @@ describe("KTS Program Tests", () => {
         Buffer.from(TEST_DATA.deviceHash),
       );
       expect(deviceAccount.registeredAt.toNumber()).to.be.greaterThan(0);
+
+      it("fails on duplicate registraion(DeviceAlreadyRegistered)", async () => {
+        try {
+          await program.methods
+            .registerDevice(TEST_DATA.deviceHash, TEST_DATA.deviceName)
+            .accountsPartial({
+              user: authorityPublicKey,
+              deviceAccount: devicePda,
+              systemProgram: SystemProgram.programId,
+            })
+            .rpc();
+          expect.fail("Expected DeviceAlreadyRegistered error");
+        } catch (error) {
+          const anchorErr = error as anchor.AnchorError;
+          expect(anchorErr.error.errorCode.code).to.equal(
+            "DeviceAlreadyRegistered",
+          );
+          expect(anchorErr.error.errorMessage).to.equal(
+            "This device is already registered",
+          );
+        }
+      });
     });
   });
 });

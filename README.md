@@ -32,7 +32,7 @@ The project consists of:
 ### Key Accounts
 
 - **DeviceAccount**: Stores device owner, hash, registration timestamp, and NFT mint status.
-- **DailyUsageAccount**: Stores daily usage data including averages, top processes, top processes (stored as byte arrays), data hash, and creation timestamp.
+- **DailyUsageAccount**: Stores daily usage data including averages, top processes, data hash, and creation timestamp.
 
 ### Program Details
 
@@ -180,6 +180,64 @@ anchor deploy --provider.cluster devnet
 ```
 
 Remember to have sufficient SOL tokens in your wallet for deployment fees.
+
+### Deployment Examples
+
+#### Example: Complete Localnet Deployment
+
+1. Build the program:
+
+   ```bash
+   anchor build
+   ```
+
+2. Start the local validator in the background:
+
+   ```bash
+   solana-test-validator &
+   ```
+
+3. Deploy the program:
+
+   ```bash
+   anchor deploy
+   ```
+
+   You should see output similar to:
+
+   ```
+   Deploying program "kts"...
+   Program Id: Emd9sap9brkhi4VLMUfUmf7qX2vaV9m2fwXjQSdB7XYp
+   ```
+
+4. Run tests to verify:
+
+   ```bash
+   anchor test
+   ```
+
+#### Example: Deploying to Devnet
+
+1. Switch to devnet:
+
+   ```bash
+   solana config set --url https://api.devnet.solana.com
+   ```
+
+2. Airdrop some SOL for deployment fees:
+
+   ```bash
+   solana airdrop 2
+   ```
+
+3. Build and deploy:
+
+   ```bash
+   anchor build
+   anchor deploy --provider.cluster devnet
+   ```
+
+   Note: Deployment to devnet may take longer and requires network fees.
 
 ### Build the Electron App
 

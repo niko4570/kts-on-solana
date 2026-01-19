@@ -1,6 +1,7 @@
 .anchor
 .DS_Store
 target
+!target/deploy/kts-keypair.json
 **/*.rs.bk
 node_modules
 test-ledger

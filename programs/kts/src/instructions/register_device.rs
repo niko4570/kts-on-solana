@@ -21,7 +21,7 @@ pub fn register_device(
     device_name:String,
 )->Result<()>{
     // Validate the device name length to prevent invalid inputs.
-    require!(device_name.len()<=64,KTSError::InvalidProcessNameLength);
+    require!(device_name.len()<=MAX_DEVICE_NAME_LENGTH,KTSError::InvalidDeviceNameLength);
     
     // Access the device account to initialize it.
     let device_account=&mut ctx.accounts.device_account;

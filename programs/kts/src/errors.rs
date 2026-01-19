@@ -21,4 +21,7 @@ pub enum KTSError{
 
     #[msg("NFT has already been minted for this device")]
     NftAlreadyMinted,
+
+    #[msg("Device name exceeds maximum length")]
+    InvalidDeviceNameLength,
 }

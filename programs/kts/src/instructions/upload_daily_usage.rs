@@ -51,22 +51,24 @@ pub fn upload_daily_usage(
         KTSError::InvalidProcessNameLength,
     )
    }
+   
    let daily_usage=&mut ctx.accounts.daily_usage_account;
 
+   // Initialize all fields since we're using init constraint
    daily_usage.device=ctx.accounts.device_account.key();
    daily_usage.timestamp=timestamp;
    daily_usage.avg_cpu_usage=avg_cpu_usage;
    daily_usage.avg_memory_usage=avg_memory_usage;
-
+   daily_usage.created_at=Clock::get()?.unix_timestamp;
+   
    let mut top_processes_array=[[0u8;MAX_PROCESS_NAME_LENGTH];PROCESS_ARRAY_SIZE];
    for (i,process) in top_processes.into_iter().enumerate(){
-    let bytes=process.as_bytes();
-    top_processes_array[i][..bytes.len()].copy_from_slice(bytes);
+        let bytes=process.as_bytes();
+        top_processes_array[i][..bytes.len()].copy_from_slice(bytes);
    }
    
    daily_usage.top_processes=top_processes_array;
    daily_usage.data_hash=data_hash;
-   daily_usage.created_at=Clock::get()?.unix_timestamp;
 
    Ok(())
 }

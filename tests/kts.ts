@@ -10,6 +10,12 @@ import {
 import { expect } from "chai";
 import { describe, it, before } from "mocha";
 
+/**
+ * Test suite for the KTS (Key Tracking System) Solana program.
+ *
+ * This suite tests device registration, daily usage upload, and NFT minting functionality.
+ * Tests are run against either localnet or devnet based on the CLUSTER environment variable.
+ */
 describe("KTS Program Tests", () => {
   const cluster = (process.env.CLUSTER as "localnet" | "devnet") || "localnet";
 
@@ -18,6 +24,10 @@ describe("KTS Program Tests", () => {
   let authorityPublicKey: PublicKey;
   let secondaryUser: Keypair;
 
+  /**
+   * Setup before running tests.
+   * Initializes the Anchor provider, loads the program, and sets up test accounts.
+   */
   before(async () => {
     provider =
       cluster === "devnet"
@@ -45,6 +55,12 @@ describe("KTS Program Tests", () => {
   // Helper functions
   let deviceHashCounter = 0; // Add counter for uniqueness
 
+  /**
+   * Generates a unique 32-byte device hash for testing.
+   * Uses a counter to ensure uniqueness across test runs.
+   *
+   * @returns A unique array of 32 bytes representing a device hash.
+   */
   function generateUniqueDeviceHash(): number[] {
     const hash = new Uint8Array(32);
     // Write counter value to first 4 bytes to ensure uniqueness
@@ -56,10 +72,20 @@ describe("KTS Program Tests", () => {
     return Array.from(hash);
   }
 
+  /**
+   * Creates a valid array of top processes for testing.
+   *
+   * @returns An array of 5 process names.
+   */
   function createValidTopProcesses(): string[] {
     return ["chrome", "vscode", "terminal", "discord", "notion"];
   }
 
+  /**
+   * Creates an invalid array of top processes (wrong length) for testing.
+   *
+   * @returns An array of 3 process names (invalid length).
+   */
   function createInvalidTopProcesses(): string[] {
     return ["chrome", "vscode", "terminal"]; // length 3
   }
